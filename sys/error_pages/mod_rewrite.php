@@ -1,0 +1,1 @@
+Mod_rewrite module is required
