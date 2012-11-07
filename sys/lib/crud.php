@@ -1,6 +1,6 @@
 <?php
 
-class Query {
+class CC_Query {
 
 	public function __construct( $string ) {
 	
@@ -32,7 +32,7 @@ class Query {
 
 }
 
-class Table extends CRUD {
+class CC_Table extends CRUD {
 
 	public function __construct( $name ) {
 		
@@ -82,7 +82,7 @@ class Table extends CRUD {
 
 }
 
-class CRUD {
+class CC_CRUD {
 
 	protected $db;
 	

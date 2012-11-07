@@ -1,24 +1,46 @@
 <?php
 
-class Form {
+class CC_Form {
 
 public $method 	= "get";
 public $submit 	= "submit";
 public $rules 		= array();
 public $msgs 		= array();
 public $errors 	= array();
-public$ruleset = array('in','required', 'match', 'alpha', 'numeric', 'alphanum', 'max', 'min', 'exact', 'email');
+public $ruleset = array('in','required', 'match', 'alpha', 'numeric', 'alphanum', 'max', 'min', 'exact', 'email');
 
+/**
+Set the method used by the form
+
+@access public
+@param string default get name of the methode
+*/
 public function method($method = "get"){
+
 	$this->method = strtolower($method);
 }
 
-public function msgs($name, $msgs){
-	$name = str_replace(' ','_',$name);
+/**
+Set the array of messages for an input
+
+@access public
+@param string name of the input
+@param array an array of messages respective to each rule
+@return void
+*/
+public function msg($name, $msgs){
+
 	$this->msgs[$name] = $msgs;
 }
 
-public function getMsg($name = null){
+/**
+Retrieve the message/s
+
+@access public
+@string string optional name of the input
+@return string
+*/
+public function get_msg($name = null){
 
 	if($name == null) {
 		if( isset( $this->errors[0] ) ) {
@@ -29,19 +51,28 @@ public function getMsg($name = null){
 	}
 }
 
-public function data($name, $index = null){
+/**
+Get reference for inputted data
+
+@access public
+@param string optional name of the input
+@return mixed
+*/
+public function &data($name = null){
 
 	if($this->method == "get"){
-		return get($name, $index);
+		$data =& $_GET;
 	}
 	
 	if($this->method == "post"){
-		return post($name, $index);
+		$data =& $_POST;
 	}
+
+	return array_get_reference_value($data, $name);
+
 }
 
 public function rule($name, $rules=array()){
-	$name = str_replace(' ','_',$name);
 	
 	foreach($rules as $rule => $value){
 		if(!in_array($rule,$this->ruleset)){
@@ -54,7 +85,7 @@ public function rule($name, $rules=array()){
 
 public function error($name = null){
 
-	if(!$this->isSubmit($this->submit)){
+	if( ! $this->is_submitted($this->submit)){
 		return false;
 	}
 
@@ -67,22 +98,42 @@ public function error($name = null){
 	}
 }
 
-public function isSubmit($submit,$value = null){
-	
-	$this->submit = $submit;
-	$submit = $this->data($submit);
+/**
+This function checks if the form is submitted
 
-	if( $value != null ) {
+@access public
+@param string the trigger for the submission of the form
+@param string/boolean an optional value compared to the trigger
+@return boolean
+*/
+public function is_submitted($submit,$value = null){
+
+	$trigger =& $this->data($submit, $value);
+
+	if( is_bool($value) ){
+
+		return (empty($trigger) != $value);
+
+	} else if( $value != null ) {
 	
-		return ($submit == $value);
+		return ($trigger == $value);
 		
 	} else {
-	
-		return !empty($submit);
-		
+
+		return !empty($trigger);
+
 	}
 }
 
+/**
+Apply the rule to the input
+
+@access public
+@param string name of the rule
+@param string the value of the input
+@param string the value of the rule
+@return boolean
+*/
 public function apply_rule($rule, $input, $value) {
 	
 	if( is_array( $input ) ) {
@@ -92,58 +143,85 @@ public function apply_rule($rule, $input, $value) {
 		foreach( $input as $index => $input_val ) {
 
 			$result[] = $this->apply_rule( $rule, $input_val, $value );
-		
+
 		}
 
-		return total_boolean( $result );
+		return array_total_boolean( $result );
 	
 	} else {
 	
-		return $this->$rule( $input, $value );
+			return $this->$rule( $input, $value );
 	
 	}
 
 }
 
-public function validate($submit,$value){
+public function validate($submit, $value = null){
 
+	// set the error count
 	$error_count = 0;
-	
-	if(!$this->isSubmit($submit,$value)){
+
+	// check if the form is submitted
+	if( ! $this->is_submitted($submit,$value)){
+
 		return false;
+	
 	}
+
 	foreach($this->rules as $name => $rules){
 	
 		foreach($rules as $rule => $value){
 		
+			// instantiate variables
 			$frule = "__$rule";
+			$return = true;
 			
-			$input = $this->data( $name );
-			
-			$return = $this->apply_rule($frule, $input, $value);
-			
+			// get reference of the input
+			$input =& $this->data( $name );
+
+			// apply rule if the input is not empty or the input is required
+			if( !empty($input) || array_key_exists('required',$this->rules[$name])){
+				$return = $this->apply_rule($frule, $input, $value);
+			}
+						
 			if($return === false){
-			
+
 				$error_count++;
-				$_name = str_replace('_',' ',$name);
 				
-				if( isset( $this->msgs[$name][$rule] ) ) {
+				$error_msg = $this->msgs[$name][$rule];
+
+				if(isset($error_msg)) {
 				
-					$errormsg = str_replace(	'@name',	$_name, $this->msgs[$name][$rule]);
-					
-					$this->errors[$_name] = $errormsg;
-					$this->errors[] = $errormsg;
+					$this->errors[$name] = $error_msg;
+
+					$this->errors[] = $error_msg;
 				
 				}
 			}
 		}
 	}
 	
+	$result = (empty($this->errors) && ($error_count < 1));
+
+	if($result === true){
+		if( isset( $this->msgs['ON_VALIDATION']['true'] ) ) {
+			$this->errors['ON_VALIDATION_TRUE'] = $this->msgs['ON_VALIDATION']['true'];
+			$this->errors[] = $this->msgs['ON_VALIDATION']['true'];
+		}
+	}
+	else if($result === false){
+		if( isset( $this->msgs['ON_VALIDATION']['false'] ) ) {
+			$this->errors['ON_VALIDATION_FALSE'] = $this->msgs['ON_VALIDATION']['false'];
+			$this->errors[] = $this->msgs['ON_VALIDATION']['false'];
+		}
+	}
+
+
 	return (empty($this->errors) && ($error_count < 1));
 }
 
 private function __required($name, $value, $index = null){
-	// $name = $this->data($name);
+
 	if($value == 'true'){
 		return !empty($name);
 	}
@@ -151,13 +229,13 @@ private function __required($name, $value, $index = null){
 }
 
 private function __match($name, $value, $index = null){
-	// $name = $this->data($name);
-	$value = $this->data($value);
+
+	$value =& $this->data($value);
 	return ($value == $name);
 }
 
 private function __alpha($name, $value, $index = null){
-	// $name = $this->data($name);
+
 	if($value == 'true'){
 		preg_match("/^[A-Za-z ]+$/",$name,$m);
 		return !empty($m);
@@ -166,7 +244,7 @@ private function __alpha($name, $value, $index = null){
 }
 
 private function __numeric($name, $value, $index = null){
-	// $name = $this->data($name);
+
 	if($value == 'true'){
 		preg_match("/^[0-9]+$/",$name,$m);
 		return !empty($m);
@@ -175,7 +253,7 @@ private function __numeric($name, $value, $index = null){
 }
 
 private function __alphanum($name, $value, $index = null){
-	// $name = $this->data($name);
+
 	if($value == 'true'){
 		preg_match("/^[A-Za-z0-9-_ ]+$/",$name,$m);
 		return !empty($m);
@@ -185,7 +263,7 @@ private function __alphanum($name, $value, $index = null){
 }
 
 private function __max($name, $value, $index = null){
-	// $name = $this->data($name);
+
 	if(strlen($name) <= $value){
 		return true;
 	}
@@ -193,7 +271,7 @@ private function __max($name, $value, $index = null){
 }
 
 private function __in($name, $value, $index = null){
-	// $name = $this->data($name);
+
 	
 	if( is_array( $value ) ) {
 		if( in_array($name, $value) ){
@@ -204,7 +282,7 @@ private function __in($name, $value, $index = null){
 }
 
 private function __min($name, $value, $index = null){
-	// $name = $this->data($name);
+
 	
 	if(strlen($name) >= $value){
 		return true;
@@ -214,7 +292,7 @@ private function __min($name, $value, $index = null){
 }
 
 private function __exact($name, $value, $index = null){
-	// $name = $this->data($name);
+
 	if(strlen($name) == $value){
 		return true;
 	}
@@ -222,7 +300,7 @@ private function __exact($name, $value, $index = null){
 }
 
 private function __email($name, $value, $index = null){
-	// $name = $this->data($name);
+
 	// $email = strrchr($name, '@');
 	if($value == 'true'){
 		// preg_match("/([-_.a-zA-Z0-9]*@[-a-z0-9]+.[a-z]*)/i", $name, $m);

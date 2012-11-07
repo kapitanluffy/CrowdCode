@@ -1,6 +1,6 @@
 <?php
 
-class mySQL implements Database {
+class CC_mySQL implements Database {
 	
 	private $db;
 	private $pass;
@@ -9,6 +9,12 @@ class mySQL implements Database {
 	private $link;
 	private $resource;
 	public $storage = array();
+
+	function startup($args){
+
+		$this->connect($args['db'], $args['pass'], $args['user'], $args['server']);
+
+	}
 	
 	function connect($db,$pass,$user,$server){
 		

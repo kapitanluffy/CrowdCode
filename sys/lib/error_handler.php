@@ -1,6 +1,6 @@
 <?php 
 
-class Error_Handler {
+class CC_Error_Handler {
 
 	public function __construct(){
 	
@@ -20,7 +20,7 @@ class Error_Handler {
 		}
 		// array_pop($backtrace);
 		
-		echo "<pre>";
+		echo "<pre class='CrowdCode_Error'>";
 
 		$i = 0;
 		foreach($backtrace as $trace){

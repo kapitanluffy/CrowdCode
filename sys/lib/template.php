@@ -1,47 +1,46 @@
 <?php 
 
-class Template {
+class CC_Template {
 
 	private $blocks = array();
 
 	private $patterns = array(
 		# {@if bool}
-		"#{@if ([\'\[\]a-zA-Z0-9_-]+)}#si",
-		"#{@if ([\'\[\]a-zA-Z0-9_-]+)=([\'\[\]a-zA-Z0-9_-]+)}#si",
+		'/{@if ([A-Za-z0-9_-]+)(?:([=\!\<\>]=)(?:[\"\']|)([A-Za-z0-9_-]+)(?:[\"\']|)|)}/',
 		# {@loop list}
-		"#{@loop ([\w]+)}#si",
-		# {@list.[INDEX]}
-		"#{@([\w]+)\.\[INDEX\]}#si",
+		"#{@LOOP ([\w]+)}#si",
+		# {@list.INDEX}
+		"#{@([\w]+)\.INDEX}#si",
 		# {&list/index}
 		"#{@([a-zA-Z0-9_-]+)\.([a-zA-Z0-9_-]+)(?:|(\[[\'\[\]a-zA-Z0-9_-]+\]+))}#si",
 		# {&list}
-		"#{@([\w]+)}#si",
+		/*"#{@([\w]+)}#si",*/
 		# endif;
 		"#{!if}#si",
 		# endforeach;
 		"#{!loop}#si",
 		# all other variables
-		"#{[!@]([\w]+)}#si", 
+		"#{[@]([\w]+)}#si", 
 	);
 	
 	private $replace = array(
-		'<?php if( isset( $$1 ) && !empty( $$1 ) ): ?>',
-		'<?php if( isset( $$1 ) && !empty( $$1 ) && ($$1==$$2) ): ?>',
-		'<?php if( isset( $$1 ) && !empty( $$1 ) ): foreach( $$1 as $$1_index => $$1_row ): ?>',
+		/*'<?php if( isset( $$1 ) && !empty( $$1 ) && ($$1$2$3) ): ?>',*/
+		'<?php if(tpl_compare(\'$1\',\'$3\',\'$2\')): ?>',
+		'<?php if( isset( $$1 ) && !empty( $$1 ) && is_array( $$1 ) ): foreach( $$1 as $$1_index => $$1_row ): ?>',
 		'<?php echo $$1_index; ?>',
 		'<?php echo isset($$1_row[\'$2\']$3) ? $$1_row[\'$2\']$3 : \'\' ; ?>',
-		'<?php echo $$1_row; ?>',
+		/*'<?php echo $$1_row; ?>',*/
 		'<?php endif; ?>',
 		'<?php endforeach; endif; ?>',
-		'<?php if( defined( \'$1\' ) ): echo $1; elseif( isset( $$1) ): echo $$1; else: echo \'{@$1}\'; endif; ?>',
+		'<?php if( defined( \'$1\' ) ): echo $1; elseif( isset($$1) && !isset( $$1_row) ): echo $$1; elseif( isset( $$1_row) ): echo $$1_row; else: echo \'{@$1}\'; endif; ?>',
 	);
 	
 	public function remove_undefined( $removeUndefined = false ) {
 		
 		if( $removeUndefined ) {
-			
-			$this->replace[count($this->replace)] = '<?php if( defined( \'$1\' ) ): echo $1; elseif( isset( $$1) ): echo $$1; else: echo \'\'; endif; ?>';
-			
+
+			$this->replace[count($this->replace)-1] = '<?php if( defined( \'$1\' ) ): echo $1; elseif( isset( $$1_row) ): echo $$1_row; elseif( isset( $$1) ): echo $$1; else: echo \'\'; endif; ?>';
+
 		}
 		
 	}
@@ -104,6 +103,8 @@ class Template {
 
 		$this->file = preg_replace($this->patterns, $this->replace, $this->file);
 
+		// echo $this->file; die;
+
 		ob_start();
 
 		eval("?> $this->file");
@@ -140,6 +141,7 @@ class Template {
 			$this->parse( $CC->data );
 		
 		}
+
 	echo $this->file;
 	
 	exit();

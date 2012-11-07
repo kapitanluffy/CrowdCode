@@ -1,6 +1,6 @@
 <?php 
 
-class URL {
+class CC_URL {
 
 	public $baseurl;
 	public $fullurl;
@@ -83,8 +83,8 @@ class URL {
 	}
 	
 	public function assets($file){
-		
-		return $this->link('assets/' . $file, false);
+
+		return $this->link(ASSETS . $file, false);
 	}
 	
 	public function css($file){

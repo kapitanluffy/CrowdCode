@@ -13,10 +13,11 @@ $autoload = array(
 
 foreach( $autoload as $alias => $class ) {
 
-	$autoload[ $alias ] = load_class( $class, $alias );
+	load_class( $class, $alias );
 
 }
 
+# Database Engine
 if( $autoload['db'] ) {
 
 	load_class('db')->connect( $dbName, $dbPass, $dbUser, $dbServer );
@@ -25,7 +26,9 @@ if( $autoload['db'] ) {
 
 # Template Engine
 if($tplEngine != ''){
+
 	load_class('tpl')->remove_undefined($removeUndefined);
+
 }
 
 # Cache Engine

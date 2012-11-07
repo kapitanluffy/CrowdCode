@@ -2,7 +2,7 @@
 
 # http://blog.piratelufi.com
 
-class Mailer {
+class CC_Mailer {
 
 	private $ds;
 	public $from;

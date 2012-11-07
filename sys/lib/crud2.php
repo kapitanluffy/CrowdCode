@@ -1,6 +1,6 @@
 <?php
 
-class CRUD {
+class CC_CRUD {
 
 	public $tb;
 	public $db;

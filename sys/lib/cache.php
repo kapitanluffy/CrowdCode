@@ -1,6 +1,6 @@
 <?php
 
-class Cache {
+class CC_Cache {
 
 	public $cache_file;
 

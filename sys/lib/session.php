@@ -1,6 +1,6 @@
 <?php 
 
-class Session {
+class CC_Session {
 
 	public $data = array();
 

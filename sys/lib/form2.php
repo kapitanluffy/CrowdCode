@@ -1,6 +1,6 @@
 <?php
 
-class Form {
+class CC_Form {
 
 public $method 	= "get";
 public $submit 	= "submit";

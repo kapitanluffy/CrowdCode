@@ -1,6 +1,6 @@
 <?php 
 
-class Upload {
+class CC_Upload {
 
 	public $multiple = false;
 	public $ruleset = array('required','success','extension','error');
@@ -20,6 +20,7 @@ class Upload {
 		
 		if( ! file_exists( ASSETS . $this->upload_dir ) ) {
 		
+			trigger_error(ASSETS . $this->upload_dir . ' does not exist');
 			mkdir( ASSETS . $this->upload_dir, 777 );
 			
 		}
@@ -50,7 +51,7 @@ class Upload {
 		return $this;
 	}
 	
-	public function msgs($name, $msgs){
+	public function msg($name, $msgs){
 	
 		$name = str_replace(' ','_',$name);
 		$this->msgs[$name] = $msgs;
@@ -188,14 +189,17 @@ class Upload {
 	}
 	
 	function get_extension( $filename ) {
+
 		return strrchr($filename, '.');
 	}
 	
 	function get_filename( $filename ) {
+
 		return basename($filename, $this->get_extension( $filename ) );
 	}
 	
 	function __create_file_hash( $file, $algo = 'md5' ) {
+
 		return hash_file( $algo, $file );
 	}
 	
@@ -222,7 +226,6 @@ class Upload {
 		if( ! $this->is_file_uploaded( $name ) ){
 			return false;
 		}
-		
 		$ext 	= $this->get_extension( $this->files($name) );
 		$file 		= $this->get_filename( $this->files($name) );
 		$tmp 	= $this->files($name, 'tmp_name');
@@ -235,6 +238,7 @@ class Upload {
 			
 		}
 
+			die(ASSETS . $this->upload_dir);
 		if( ! move_uploaded_file( $tmp, ASSETS . $this->upload_dir . $file . $ext ) ) {
 		
 			$errormsg = 'Error moving to upload directory '. $file ;
@@ -260,7 +264,7 @@ class Upload {
 
 	}
 	
-	public function getMsg($name = null){
+	public function get_msg($name = null){
 	
 		if($name == null) {
 		

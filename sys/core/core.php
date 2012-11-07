@@ -170,9 +170,9 @@ class CC_Loader {
 	function library($name){
 	
 		$name = strtolower( $name );
-	
-		Cloud::get_instance()->$name = load_class($name);
 		
+		Cloud::get_instance()->$name = load_class($name);
+
 		$this->register_object( $name, 'library' );
 		
 		return Cloud::get_instance()->$name;

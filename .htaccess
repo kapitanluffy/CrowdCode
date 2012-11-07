@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /CrowdCode/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?CC_QUERY=$1&%{QUERY_STRING} [L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+ErrorDocument 404 system/error_pages/mod_rewrite.php
+</IfModule>

@@ -1,6 +1,6 @@
 <?php
 
-class Page {
+class CC_Page {
 
 	public $current = 1;
 	public $next = 2;
