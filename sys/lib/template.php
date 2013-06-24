@@ -112,6 +112,29 @@ class CC_Template {
 		$this->file = ob_get_clean();
 		
 	}
+
+	public function parse_from_data($template_file, $return = false) {
+	
+		$last_pattern = count($this->patterns);
+	
+        $parsed_template = preg_replace_callback($this->patterns[$last_pattern], array($this, 'get_variable'), $template_file);
+
+        if($return === false) {
+            echo $parsed_template;
+            return true;
+        }
+        else {
+            return $parsed_template;
+        }
+
+    }
+
+    public function get_variable( $matches ) {
+		
+		$CC =& get_instance();
+	
+        return $CC->data[$matches[1]];
+    }
 	
 	function display( $file = null ) {
 		$CC =& get_instance();
